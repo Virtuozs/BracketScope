@@ -1,6 +1,7 @@
 #ifndef PARENTHESESCHECKER_HPP
 #define PARENTHESESCHECKER_HPP
 
+#include <stack>
 #include <string>
 #include <vector>
 #include <utility>
@@ -20,12 +21,12 @@ public:
     void clear();
 
 private:
-    struct BracketPosition {
+    struct StackItem {
         char bracket;
         size_t position;
     };
 
-    std::vector<BracketPosition> bracketStack;
+    std::stack<StackItem> bracketStack;
     std::vector<ErrorInfo> errors;
     std::vector<std::string> checkedFiles;
 

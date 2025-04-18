@@ -25,7 +25,6 @@ std::string ParenthesesChecker::readFileContent(const std::string& filePath) {
     if (!inputFile.is_open()) {
         throw std::runtime_error("Could not open file: " + filePath);
     }
-
     std::stringstream buffer;
     buffer << inputFile.rdbuf();
     checkedFiles.push_back(filePath);
@@ -39,7 +38,7 @@ void ParenthesesChecker::check(const std::string& expression) {
         char ch = expression[i];
         
         if (isOpeningBracket(ch)) {
-            bracketStack.push_back({ch, i});
+            bracketStack.push({ch, i});
         } 
         else if (isClosingBracket(ch)) {
             if (bracketStack.empty()) {
@@ -47,7 +46,7 @@ void ParenthesesChecker::check(const std::string& expression) {
                 continue;
             }
             
-            auto top = bracketStack.back();
+            StackItem top = bracketStack.top();
             char expectedOpening = getMatchingOpening(ch);
             
             if (top.bracket != expectedOpening) {
@@ -55,13 +54,15 @@ void ParenthesesChecker::check(const std::string& expression) {
                                     "' and '" + std::string(1, ch) + "'"});
             }
             
-            bracketStack.pop_back();
+            bracketStack.pop();
         }
     }
 
-    for (const auto& bp : bracketStack) {
-        errors.push_back({bp.position, "Unmatched opening bracket '" + 
-                          std::string(1, bp.bracket) + "'"});
+    while (!bracketStack.empty()) {
+        StackItem item = bracketStack.top();
+        errors.push_back({item.position, "Unmatched opening bracket '" + 
+                          std::string(1, item.bracket) + "'"});
+        bracketStack.pop();
     }
 }
 
@@ -84,5 +85,7 @@ const std::vector<std::string>& ParenthesesChecker::getCheckedFiles() const {
 
 void ParenthesesChecker::clear() {
     errors.clear();
-    bracketStack.clear();
+    while (!bracketStack.empty()) {
+        bracketStack.pop();
+    }
 }
